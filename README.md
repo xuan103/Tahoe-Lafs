@@ -4,7 +4,7 @@ Tahoe-Lafs
 ###### tags: `Tahoe-Lafs` `tahoe-lafs-1.17.1` `Ubuntu` `ubuntu-20.04-server`
 
 ```
-Finily Updata Date: MAY 25, 2022 11:30 AM
+Finily Updata Date: 2022/05/25 15:30 PM
 ```
 
 Contents
@@ -14,8 +14,11 @@ Contents
 - [Hosts setup](#Hosts)
 - [Install Tahoe-LAFS (On each node)](#Tahoe-LAFS)
 - How To Run Tahoe-LAFS
-    - [Running a Client](#Client)
     - [Instantiate the nodes](#nodes)
+    - [Instantiate the introducer](#introducer)
+- FTP
+    - [Instantiate the nodes](#ftp-nodes)
+    - [Instantiate the introducer](#ftp-introducer)
 
 ---
 
@@ -27,9 +30,9 @@ Contents
 <h2 id="Hosts">Hosts setup</h2> 
 
 - IPs and hosts are:
-  - 192.168.105.91 (`host`) [**client**]
-  - 192.168.105.92 (`vm1`) [**introducer**]
-  - 192.168.105.93 (`vm2`) [**client**]
+  - 192.168.105.91 (`host`) [**Client**]
+  - 192.168.105.92 (`vm1`) [**Introducer**]
+  - 192.168.105.93 (`vm2`) [**Client**]
 
 ---
 <h2 id="Tahoe-LAFS">Install Tahoe-LAFS (On each node) </h2> 
@@ -55,7 +58,7 @@ Contents
           Work Phone []:
           Home Phone []:
           Other []:
-  Is the information correct? [Y/n] **`Y`**
+  Is the information correct? [Y/n] `Y`
 ```
 
 - [ ] sudo adduser tahoe_user sudo
@@ -82,8 +85,10 @@ Contents
      
 3. 安裝 python3 套件
 - [ ] sudo apt-get update
+- [ ] sudo apt-get install tree curl ssh openssl make gcc telnetd nmap -y
 - [ ] sudo apt install python3-pip -y
 - [ ] sudo apt-get install python-dev libffi-dev libssl-dev -y
+   > **有紅字就多執行幾次**
 
 
    3.1 查看 python3 版本
@@ -100,7 +105,7 @@ Contents
 
 4. 安裝 tahoe-lafs 工具
 - [ ] pip install tahoe-lafs
-- [ ] pip install --user virtualenv
+- [ ] **(Optional)** pip install --user virtualenv
    
    4.1 查看 tahoe 版本
      - [ ] tahoe --version
@@ -114,61 +119,13 @@ Contents
 :books: How To Run Tahoe-LAFS
 ---
 
-<h3 id="Client">Running a Client</h3>
-
-```
-使用者: bigred@90-tahoe-lafs: "host"
-```
-
-- [ ] tahoe create-client
-
-- [ ] ls -al
-
-```
-   total 44
-   drwxr-xr-x  7 bigred bigred 4096 May 14 18:43 .
-   drwxr-xr-x  4 root   root   4096 May 14 18:02 ..
-   -rw-------  1 bigred bigred  990 May 14 17:27 .bash_history
-   -rw-r--r--  1 bigred bigred  220 Feb 25  2020 .bash_logout
-   -rw-r--r--  1 bigred bigred 3771 Feb 25  2020 .bashrc
-   drwx------  3 bigred bigred 4096 May 14 17:18 .cache
-   drwx------  6 bigred bigred 4096 May 14 17:18 .local
-   -rw-r--r--  1 bigred bigred  807 Feb 25  2020 .profile
-   drwx------  2 bigred bigred 4096 May 14 15:48 .ssh
-   -rw-r--r--  1 bigred bigred    0 May 14 15:51 .sudo_as_admin_successful
-   drwxrwxr-x  3 bigred bigred 4096 May 14 18:43 `.tahoe`
-   drwxrwxr-x 14 bigred bigred 4096 May 14 18:29 tahoe-lafs
-```
-
-- [ ] cp .tahoe/tahoe.cfg .tahoe/tahoe.cfg.bk
-- [ ] ls -al .tahoe
-
-```
-   total 24
-   drwxrwxr-x 3 bigred bigred 4096 May 16 09:00 .      
-   drwxr-xr-x 7 bigred bigred 4096 May 16 08:58 ..     
-   drwx------ 2 bigred bigred 4096 May 16 08:58 private
-   -rw-rw-r-- 1 bigred bigred 1107 May 16 08:58 tahoe.cfg
-   -rw-rw-r-- 1 bigred bigred 1107 May 16 09:00 tahoe.cfg.bk
-   -rw-rw-r-- 1 bigred bigred  143 May 16 08:58 tahoe-client.tac
-```
-
-- [ ] nano ~/.tahoe/private/introducers.yaml
-
-```bash=
-introducers:
-  petname2:
-    furl: "pb://fodk4doc64febdoxke3a4ddfyanz7ajd@tcp:testgrid.tahoe-lafs.org:5000/el4fo3rm2h22cnilukmjqzyopdgqxrd2"
-```
-
->---
 <h3 id="nodes">Instantiate the nodes</h3>
 
-```
-使用者: (venv) bigred@92-tahoe-lafs: "vm2"
-```
 
-- [ ] tahoe create-node --hostname=**`192.168.105.92`** .tahoe
+- ==**需要兩個 Terminal**==
+
+### Terminal(1):
+- [ ] tahoe create-node --hostname=15X-tahoe-node-X ~/.tahoe
 - [ ] ls -al
 
 ```
@@ -208,174 +165,206 @@ introducers:
     furl: "pb://fodk4doc64febdoxke3a4ddfyanz7ajd@tcp:testgrid.tahoe-lafs.org:5000/el4fo3rm2h22cnilukmjqzyopdgqxrd2"
 ```
 
+- [ ] sudo nano /etc/hosts
+
+```bash=
+192.168.105.150 150-Tahoe-Introducer
+192.168.105.152 152-Tahoe-node-2
+192.168.105.153 153-Tahoe-node-3
+192.168.105.154 154-Tahoe-node-4
+192.168.105.155 155-Tahoe-node-5
+192.168.105.156 156-Tahoe-node-6
+```
+
+- [ ] nano .tahoe/tahoe.cfg
+
+```bash=
+[node]
+nickname = 15X-tahoe-node-X
+reveal-IP-address = true
+web.port = tcp:3456:interface=192.168.105.15X
+web.static = public_html
+tub.port = tcp:37051
+tub.location = tcp:192.168.105.15X:37051
+...
+shares.needed = 2         ### 檔案分持數量
+shares.happy = 3          ### sotrage node 數量
+shares.total = 5
+
+[storage]
+# Shall this node provide storage service?
+enabled = true
+readonly = false
+reserved_space = 1G
+
+[helper]
+# Shall this node run a helper service that clients can use?
+enabled = true
+```
+
+### Terminal(2):
+- [ ] tahoe run .tahoe
+- [ ] ^C
+
+
+### Terminal(1):
+- [ ] cat .tahoe/private/helper.furl 
+> pb://pjusmphla2qrczzrax6kztntyyckyoai@tcp:192.168.105.15X:37051/tdmu7ix4iw6bfr6g3ezs7h3kjocnef62
+
+-  複製從 ‘cat’ 得到的字串，並將其貼到 .tahoe/tahoe.cfg
+
+- [ ] nano .tahoe/tahoe.cfg
+
+```bash=
+[client]
+helper.furl = pb://pjusmphla2qrczzrax6kztntyyckyoai@tcp:192.168.105.15X:37051/tdmu7ix4iw6bfr6g3ezs7h3kjocnef62
+```
+
+### Terminal(2):
+- [ ] tahoe run .tahoe
+
+
 ---
 
-```
-使用者: bigred@91-tahoe-lafs: "vm1%"
-```
+<h3 id="introducer">Instantiate the introducer</h3>
 
 - ==**需要兩個 Terminal**==
 
 ### Terminal(1):
-- [ ] tahoe create-node --hostname=**`192.168.105.91`** ~/introducer
- > Node created in '/home/bigred/tahoe-introducer'
- >  Please add introducers to '/home/bigred/introducer/ 
-> private/introducers.yaml'!
- >  The node cannot connect to a grid without it.
- >  Please set [node]nickname= in '/home/bigred/
-introducer/tahoe.cfg'
+- [ ] sudo nano /etc/hosts
+
+```bash=
+192.168.105.150 150-Tahoe-Introducer
+192.168.105.152 152-Tahoe-node-2
+192.168.105.153 153-Tahoe-node-3
+192.168.105.154 154-Tahoe-node-4
+192.168.105.155 155-Tahoe-node-5
+192.168.105.156 156-Tahoe-node-6
+```
+
+- [ ] tahoe create-introducer --hostname=150-tahoe-introducer ~/introducer
+
+```
+'tahoe run' in '/home/bigred/introducer'
+running node in '/home/bigred/introducer'
+2022-05-25T07:15:37+0000 [twisted.scripts._twistd_unix.UnixAppLogger#info] twistd 22.4.0 (/usr/bin/python3 3.8.10) starting up.
+```
 
 - [ ] cp ~/introducer/tahoe.cfg ~/introducer/tahoe.cfg.bk
 - [ ] nano introducer/tahoe.cfg
 
-```
- >  [node]
- >  nickname = `introducer-vm1`
- >  reveal-IP-address = true
- >  web.port = tcp:3456:interface=`0.0.0.0`
- >  web.static = public_html
- >  tub.port = tcp:38263
- >  tub.location = tcp:192.168.105.91:38263
+```bash=
+[node]
+nickname = 150-tahoe-introducer
+reveal-IP-address = true
+web.port =
+web.static = public_html
+tub.port = tcp:45825
+tub.location = tcp:150-Tahoe-Introducer:45825
 ```
 
-- [ ] tahoe run introducer
+- [ ] nohup tahoe run introducer
 
 
 ### Terminal(2):
-- [ ] cat tahoe-introducer/private/logport.furl
-> pb://fac5kb7rvl6mxghtliblvrixqzdejpdw@localhost:55561/5uqy7s3a4eizuk657rrn3ue2lpf4d2ds
+- [ ] cat introducer/private/storage.furl 
+> pb://iy4kkoh2jzrisld5lohjskz45ypgwu4u@tcp:192.168.105.150:38857/2gsogw7y3zbuyupmb4ghpknea2i5kvtt
 
-**複製從 'cat' 得到的字串，並將其貼到 ==vm2%== 及 ==host== 的 tahoe.cfg 中.**
-
+- 複製從 ‘cat’ 得到的字串，並將其貼到所有 node 的 `~/.tahoe/private/introducers.yaml` 中. 
 
 ---
+## FTP
 
-```
-使用者: bigred@90-tahoe-lafs`: "host"
-```
+<h3 id="ftp-introducer">Instantiate the introducer</h3>
 
-- ==**需要兩個 Terminal**==
-
-### Terminal(1):
-- [ ] nano -c .tahoe/tahoe.cfg
-
-```
- >  [node]
- >  nickname = `client-host`
- >  reveal-IP-address = true
- >  web.port = tcp:3456:interface=`0.0.0.0`
- >  web.static = public_html
- >  tub.port = disabled
- >  tub.location = disabled
- >  ...
- >  [client]
- >  helper.furl = `pb://fac5kb7rvl6mxghtliblvrixqzdejpdw@localhost:55561/5uqy7s3a4eizuk657rrn3ue2lpf4d2ds`
- >  ...
- >  [storage]
- >  #Shall this node provide storage service?
- >  enabled = `true`
- >  readonly = `false`
- >  reserved_space = 1G
- >  `#here you tell the storage server how much disk space it cannot use`
-```
-
-- [ ] tahoe run
-
-### Terminal(2):
-- [ ] ps aux | grep tahoe
-> bigred     54178  0.6  0.7  75504 64184 pts/0    S+   02:23   0:01 /usr/bin/python3 /home/bigred/.local/bin/tahoe run tahoe-introducer
-
-> bigred     54252  0.0  0.0   8160   656 pts/1    S+   02:26   0:00 grep --color=auto tahoe
-
-
-```
-使用者: bigred@92-tahoe-lafs`: "vm2%"
-```
-
-- ==**需要兩個 Terminal**==
-
-### Terminal(1):
-- [ ] nano -c .tahoe/tahoe.cfg
-
-```
- >  [node]
- >  nickname = `client-vm2`
- >  reveal-IP-address = true
- >  web.port = tcp:3456:interface=`0.0.0.0`
- >  web.static = public_html
- >  tub.port = disabled
- >  tub.location = disabled
- >  …
- >  [client]
- >  introducer.furl =  `pb://fac5kb7rvl6mxghtliblvrixqzdejpdw@localhost:55561/5uqy7s3a4eizuk657rrn3ue2lpf4d2ds`
- >  helper.furl =
- >  …
- >  [storage]
- >  #Shall this node provide storage service?
- >  enabled = `true`
- >  readonly = `false`
- >  reserved_space = 1G
- >  #here you tell the storage server how much disk space it cannot use
- >  ...
- > [helper]
- > # Shall this node run a helper service that clients can use?
- > enabled = `true`
-```
-
-- [ ] tahoe run
-
-### Terminal(2):
-- [ ] cat .tahoe/private/helper.furl
-> pb://ibgrnnxmykokjdtbcccfprs7xpvwgtmr@tcp:192.168.105.92:42827/fpduokbpmozhrksx74mt7sd3jpgz4uc6
-
-**複製從 'cat' 得到的字串，並將其貼到 `.tahoe/tahoe.cfg`**
+### Terminal:
+- [ ] cd introducer/
+- [ ] nano ~/introducer/private/accounts
 
 ```bash=
-helper.furl = pb://ibgrnnxmykokjdtbcccfprs7xpvwgtmr@tcp:192.168.105.92:42827/fpduokbpmozhrksx74mt7sd3jpgz4uc6
+# This is a public key line: username keytype pubkey cap
+# (Tahoe-LAFS v1.11 or later)
+carol 
 ```
 
--  在`Terminal(1)` 重啟 `tahoe run`
+- [ ] ssh-keygen -f private/ssh_host_rsa_key
+
+```
+Generating public/private rsa key pair.
+Enter passphrase (empty for no passphrase):  [ENTER]
+Enter same passphrase again:  [ENTER]
+```
+
+- [ ] cat ~/introducer/private/ssh_host_rsa_key.pub
+> ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQDY+zoZhschDVDXbWpGCpUin+GTTFXSW9O/fyVElsg5KClWAEf+ebddqA3YqrKNljhkguuOmcsyaMRBs8TLdQL7Z9QQ8hfETtSXXakW50AxeyhKuTx4KpVc3s9zsLL1xFQPhhyXGexDr2EWYORDyoLTKRi2a3hBwOahYO0jrGvoubfpsqvHw/ukyAymc8sjlsLLWn/URuhmWvMn3Vc7mYohxMSMHOGyyR3/uWuA4pT2TNHxoEQ2uQ4nmXw3Gi6pvoapsSY2FT3q8UTtiqQkmnBLbeuimNyd4kMg2ujkcasHRgwg2N+YkO0nd3oz5niL4lZDOB7j9P0RApIbYYXxZ0EImW/b8eZKgNhiKXC+3pI994NqwlxDPZl/kB8yTYSqgE/L5XgI2OMzjvjlC0uZJ1IPBemX+LerodqELC/Wo8YkAh2r2GIlgq3+Ss5JZlMHfP3NFvEaexxH+DtTRzAfZfUXP08TZIpgy3eS9PRx+kQr+eLibVOZz5h9xG7k0DhSb/c= bigred@150-tahoe-introducer
+
+- [ ] nano ~/introducer/private/accounts
+
+```bash=
+# This is a public key line: username keytype pubkey cap
+# (Tahoe-LAFS v1.11 or later)
+carol ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQDY+zoZhschDVDXbWpGCpUin+GTTFXSW9O/fyVElsg5KClWAEf+ebddqA3YqrKNljhkguuOmcsyaMRBs8TLdQL7Z9QQ8hfETtSXXakW50AxeyhKuTx4KpVc3s9zsLL1xFQPhhyXGexDr2EWYORDyoLTKRi2a3hBwOahYO0jrGvoubfpsqvHw/ukyAymc8sjlsLLWn/URuhmWvMn3Vc7mYohxMSMHOGyyR3/uWuA4pT2TNHxoEQ2uQ4nmXw3Gi6pvoapsSY2FT3q8UTtiqQkmnBLbeuimNyd4kMg2ujkcasHRgwg2N+YkO0nd3oz5niL4lZDOB7j9P0RApIbYYXxZ0EImW/b8eZKgNhiKXC+3pI994NqwlxDPZl/kB8yTYSqgE/L5XgI2OMzjvjlC0uZJ1IPBemX+LerodqELC/Wo8YkAh2r2GIlgq3+Ss5JZlMHfP3NFvEaexxH+DtTRzAfZfUXP08TZIpgy3eS9PRx+kQr+eLibVOZz5h9xG7k0DhSb/c= bigred@150-tahoe-introducer
+```
+
+- [ ] nano tahoe.cfg
+
+```bash=
+[sftpd]
+enabled = true
+port = tcp:8022:interface=192.168.105.150
+host_pubkey_file = private/ssh_host_rsa_key.pub
+host_privkey_file = private/ssh_host_rsa_key
+accounts.file = private/accounts
+```
 
 ---
 
-## 在瀏覽器打開 Tahoe
+<h3 id="ftp-nodes">Instantiate the nodes</h3>
 
-- http://192.168.105.90:3456/
+### Terminal:
 
-- http://192.168.105.91:3456/
+- [ ] cd .tahoe/
+- [ ] nano ~/.tahoe/private/accounts
 
-- http://192.168.105.92:3456/
+```bash=
+# This is a public key line: username keytype pubkey cap
+# (Tahoe-LAFS v1.11 or later)
+carol 
+```
 
----
+- [ ] ssh-keygen -f private/ssh_host_rsa_key
+> Generating public/private rsa key pair.
+Enter passphrase (empty for no passphrase):  [ENTER]
+Enter same passphrase again:  [ENTER]
+
+- [ ] cat private/ssh_host_rsa_key.pub
+>ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQDeCY8AVyfq7hU9L2tLgnAQjOWNipzlRBiAZ966ulru0UZWGrjady8xkHh/esQ9AEkhqNuPDt83THTVy5953hCiWhaRrsR5bMxl3RmWb3qzOdgNBvBfrfd6hQVVv+QXeSyjGe9BfBgrmd6801grF8EXjdwL361+XKzSI5GQ4mW/vRW+DMeo/hHMTj5o5tQEWTMAqsDYNpbKRUDzmI/3QnnmTXeKxFve9pwepnEy5ckqniDyfVNhkZZtodxz1CmhsBxl/GDHBfv2piil4adiZmZw1m/MqL7pBHGgVvKtIT7zHRfZDwlxqthFhQTW3Q2eDYpB1/zSO8gpxZePV9Fa6nfr2cH4W75wARijXa2KPNZo7sHD5cu675OEaVjHKrYpWMJhyI0ULUHf+Ha/6ze6GJXlY94JOdHW/mvD78FaNhiFtt+c5qtIqOF7xoY8j65qeB/sNdL0Uva+NB/DCrIvzaVx3uuL7U6wJV9sNatJ10WTtOix7qu9AL0k6yTTaANAiLk= bigred@156-tahoe-node-6
+
+- [ ] nano .tahoe/private/accounts
+
+```bash=
+# This is a public key line: username keytype pubkey cap
+# (Tahoe-LAFS v1.11 or later)
+carol ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQDeCY8AVyfq7hU9L2tLgnAQjOWNipzlRBiAZ966ulru0UZWGrjady8xkHh/esQ9AEkhqNuPDt83THTVy5953hCiWhaRrsR5bMxl3RmWb3qzOdgNBvBfrfd6hQVVv+QXeSyjGe9BfBgrmd6801grF8EXjdwL361+XKzSI5GQ4mW/vRW+DMeo/hHMTj5o5tQEWTMAqsDYNpbKRUDzmI/3QnnmTXeKxFve9pwepnEy5ckqniDyfVNhkZZtodxz1CmhsBxl/GDHBfv2piil4adiZmZw1m/MqL7pBHGgVvKtIT7zHRfZDwlxqthFhQTW3Q2eDYpB1/zSO8gpxZePV9Fa6nfr2cH4W75wARijXa2KPNZo7sHD5cu675OEaVjHKrYpWMJhyI0ULUHf+Ha/6ze6GJXlY94JOdHW/mvD78FaNhiFtt+c5qtIqOF7xoY8j65qeB/sNdL0Uva+NB/DCrIvzaVx3uuL7U6wJV9sNatJ10WTtOix7qu9AL0k6yTTaANAiLk= bigred@156-tahoe-node-6
+```
+
+- [ ] nano tahoe.cfg
+
+```bash=
+[sftpd]
+enabled = true
+port = tcp:8022:interface=192.168.105.XXX
+host_pubkey_file = private/ssh_host_rsa_key.pub
+host_privkey_file = private/ssh_host_rsa_key
+accounts.file = private/accounts
+```
 
 :mag: Reference
 ---
 
-https://tahoe-lafs.readthedocs.io/
-
-https://tahoe-lafs.org/trac/tahoe-lafs/wiki/Tutorial
-
-https://www.digitalocean.com/community/tutorials/tahoe-lafs
-
-https://www.howtoing.com/tahoe-lafs
-
-https://docmiao.com/community/tutorials/tahoe-lafs
-
-
-https://github.com/tahoe-lafs/tahoe-lafs
-
-https://www.w3study.wiki/a/202109/1030802.html
-
-https://tahoe-lafs.org/trac/tahoe-lafs/ticket/1478
-
-https://www.skynats.com/blog/telnet-connection-refused-by-remote-host/
-
-https://www.ltsplus.com/linux/3-ways-check-remote-server-open-port
-
-http://www.idcat.cn/tahoe%E7%AE%80%E5%8D%95%E9%83%A8%E7%BD%B2.html
-
-
-
+- https://tahoe-lafs.readthedocs.io/
+- https://tahoe-lafs.org/trac/tahoe-lafs/wiki/Tutorial
+- https://github.com/tahoe-lafs/tahoe-lafs
 
 ---
 
